@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"gopherfish/internal/engine"
+)
 
 func main() {
-	fmt.Println("Hello World!")
+	engine.RunGame()
 }
