@@ -5,6 +5,7 @@ import (
 	"gopherfish/internal/utils"
 	"gopherfish/internal/views"
 	"log"
+	"time"
 )
 
 var GameState = types.GameState{
@@ -25,14 +26,29 @@ func refreshGameState(g types.GameState) types.GameState {
 }
 
 func RunGame() {
+	cleanup, err := utils.StartInputLoop(func(x, y int, pressed bool) {
+		GameState.Terminal.CursorPos.X = x
+		GameState.Terminal.CursorPos.Y = y
+		GameState.Terminal.CursorPos.Clicked = pressed
+	})
+	if err != nil {
+		log.Println("cursor err:", err)
+	} else {
+		defer cleanup()
+	}
+
+	menuView := &views.MenuView{}
+
 	for {
 		var lines []string
 		GameState = refreshGameState(GameState)
 		switch GameState.CurrentView {
 		case types.GameViewMenu:
-			lines = (&views.MenuView{Game: GameState}).Draw()
+			menuView.Game = GameState
+			lines = menuView.Draw()
 		}
 
 		RenderFrame(GameState, lines)
+		time.Sleep(32 * time.Millisecond)
 	}
 }
