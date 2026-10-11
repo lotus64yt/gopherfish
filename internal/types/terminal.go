@@ -6,9 +6,10 @@ type TerminalSize struct {
 }
 
 type TerminalCursorPos struct {
-	X       int
-	Y       int
-	Clicked bool
+	X           int
+	Y           int
+	Clicked     bool
+	JustClicked bool
 }
 
 type TerminalInfo struct {

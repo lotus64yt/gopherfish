@@ -3,11 +3,13 @@ package utils
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/charmbracelet/x/term"
 )
+
+var mouseSeqRegex = regexp.MustCompile(`\x1b\[<(\d+);(\d+);(\d+)([Mm])`)
 
 func StartInputLoop(onMouse func(x, y int, pressed bool)) (func(), error) {
 	oldState, err := term.MakeRaw(os.Stdin.Fd())
@@ -26,25 +28,20 @@ func StartInputLoop(onMouse func(x, y int, pressed bool)) (func(), error) {
 			}
 			seq := string(buf[:n])
 
-			if strings.HasPrefix(seq, "\033[<") {
-				isRelease := strings.HasSuffix(seq, "m")
-				isPressOrMove := strings.HasSuffix(seq, "M")
+			matches := mouseSeqRegex.FindAllStringSubmatch(seq, -1)
+			if len(matches) > 0 {
+				for _, match := range matches {
+					b, _ := strconv.Atoi(match[1])
+					x, _ := strconv.Atoi(match[2])
+					y, _ := strconv.Atoi(match[3])
+					isRelease := match[4] == "m"
 
-				if isRelease || isPressOrMove {
-					trimmed := seq[3 : len(seq)-1]
-					parts := strings.Split(trimmed, ";")
-					if len(parts) == 3 {
-						b, _ := strconv.Atoi(parts[0])
-						x, _ := strconv.Atoi(parts[1])
-						y, _ := strconv.Atoi(parts[2])
-
-						isPressed := false
-						if !isRelease && (b&3) != 3 {
-							isPressed = true
-						}
-
-						onMouse(x-1, y-1, isPressed)
+					isPressed := false
+					if !isRelease && (b&3) != 3 {
+						isPressed = true
 					}
+
+					onMouse(x-1, y-1, isPressed)
 				}
 			} else if seq == "\x03" || seq == "\x1b" {
 				fmt.Print("\033[?1006l\033[?1003l")

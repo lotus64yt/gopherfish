@@ -11,4 +11,5 @@ const (
 type GameState struct {
 	CurrentView GameViewPage
 	Terminal    TerminalInfo
+	Score       int
 }

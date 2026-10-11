@@ -28,7 +28,7 @@ func (b *Button) UpdateAndDraw(screen []string, cursor types.TerminalCursorPos) 
 	isActionTriggered := false
 
 	if isHovered {
-		if b.WasClicked && !cursor.Clicked {
+		if (b.WasClicked && !cursor.Clicked) || cursor.JustClicked {
 			isActionTriggered = true
 		}
 	}

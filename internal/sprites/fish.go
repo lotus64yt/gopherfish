@@ -8,12 +8,20 @@ import (
 )
 
 type Fish struct {
-	X        int
-	Y        int
-	DirX     int
-	DirY     int
-	DirYStep int
-	DirYTick int
+	X         int
+	Y         int
+	DirX      int
+	DirY      int
+	DirYStep  int
+	DirYTick  int
+	AsciiFish string
+}
+
+func (f *Fish) GetAscii() string {
+	if f.DirX == -1 {
+		return "@><"
+	}
+	return "><@"
 }
 
 func SpawnRandomShip(g types.GameState, fishs []Fish) []Fish {
@@ -22,14 +30,24 @@ func SpawnRandomShip(g types.GameState, fishs []Fish) []Fish {
 		dirX = 1
 	}
 
+	w := g.Terminal.Size.Width
+	if w <= 10 {
+		w = 80
+	}
+	h := g.Terminal.Size.Height - 10
+	if h <= 0 {
+		h = 14
+	}
+
 	newFish := Fish{
 		DirX:     dirX,
-		X:        rand.Intn(g.Terminal.Size.Width*2) / 2,
-		Y:        rand.Intn(int(math.Abs(float64(g.Terminal.Size.Height-10)))*2) / 2,
+		X:        rand.Intn(w),
+		Y:        rand.Intn(int(math.Abs(float64(h)))) + 2,
 		DirY:     rand.Intn(3) - 1,
 		DirYStep: rand.Intn(2)*2 - 1,
 		DirYTick: rand.Intn(5),
 	}
+	newFish.AsciiFish = newFish.GetAscii()
 
 	return append(fishs, newFish)
 }
@@ -51,6 +69,13 @@ func (f *Fish) Tick(g types.GameState) {
 			f.DirYStep = 1
 		}
 		f.Y += f.DirY
+		if f.Y < 1 {
+			f.Y = 1
+			f.DirY = 1
+		} else if g.Terminal.Size.Height > 4 && f.Y >= g.Terminal.Size.Height-4 {
+			f.Y = g.Terminal.Size.Height - 4
+			f.DirY = -1
+		}
 	}
 
 	if utils.TerminalHitScreenBorder(g.Terminal.Size, types.TerminalCursorPos{
@@ -62,29 +87,14 @@ func (f *Fish) Tick(g types.GameState) {
 }
 
 func (f *Fish) Draw(screen []string) []string {
-	fishStr := "><@"
-	if f.DirX == -1 {
-		runes := []rune(fishStr)
-		for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
-			runes[i], runes[j] = runes[j], runes[i]
-		}
-		for i, r := range runes {
-			switch r {
-			case '>':
-				runes[i] = '<'
-			case '<':
-				runes[i] = '>'
-			}
-		}
-		fishStr = string(runes)
-	}
+	f.AsciiFish = f.GetAscii()
 
 	if f.Y < 0 || f.Y >= len(screen) {
 		return screen
 	}
 
 	line := []rune(screen[f.Y])
-	fish := []rune(fishStr)
+	fish := []rune(f.AsciiFish)
 	start := f.X - len(fish)/2
 
 	for i, r := range fish {
@@ -97,4 +107,16 @@ func (f *Fish) Draw(screen []string) []string {
 	screen[f.Y] = string(line)
 
 	return screen
+}
+
+func (f *Fish) IsClicked(cPos types.TerminalCursorPos) bool {
+	if cPos.Y == f.Y {
+		fishStr := []rune(f.GetAscii())
+		start := f.X - len(fishStr)/2
+		if cPos.X >= start-1 && cPos.X <= start+len(fishStr) {
+			return true
+		}
+	}
+
+	return false
 }

@@ -4,6 +4,7 @@ import (
 	"gopherfish/internal/sprites"
 	"gopherfish/internal/types"
 	"gopherfish/internal/utils"
+	"strconv"
 	"time"
 )
 
@@ -12,6 +13,7 @@ type ChasseView struct {
 	Fishs        []sprites.Fish
 	lastFishTick time.Time
 	fishTime     time.Duration
+	wasClicked   bool
 }
 
 func (m *ChasseView) Draw() []string {
@@ -23,6 +25,21 @@ func (m *ChasseView) Draw() []string {
 	if len(m.Fishs) == 0 {
 		for range 10 {
 			m.Fishs = sprites.SpawnRandomShip(*m.Game, m.Fishs)
+		}
+	}
+
+	cursor := m.Game.Terminal.CursorPos
+	justClicked := cursor.JustClicked || (cursor.Clicked && !m.wasClicked)
+	m.wasClicked = cursor.Clicked
+
+	if justClicked {
+		for i := len(m.Fishs) - 1; i >= 0; i-- {
+			if m.Fishs[i].IsClicked(cursor) {
+				m.Game.Score++
+				m.Fishs = append(m.Fishs[:i], m.Fishs[i+1:]...)
+				// m.Fishs = sprites.SpawnRandomShip(*m.Game, m.Fishs)
+				break
+			}
 		}
 	}
 
@@ -44,5 +61,7 @@ func (m *ChasseView) Draw() []string {
 	for i := range m.Fishs {
 		lines = m.Fishs[i].Draw(lines)
 	}
+
+	lines = utils.DrawText(lines, m.Game.Terminal.Size.Width/10, m.Game.Terminal.Size.Height-3, "Score: "+strconv.Itoa(m.Game.Score))
 	return lines
 }

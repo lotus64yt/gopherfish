@@ -29,6 +29,9 @@ func RunGame() {
 	cleanup, err := utils.StartInputLoop(func(x, y int, pressed bool) {
 		GameState.Terminal.CursorPos.X = x
 		GameState.Terminal.CursorPos.Y = y
+		if pressed && !GameState.Terminal.CursorPos.Clicked {
+			GameState.Terminal.CursorPos.JustClicked = true
+		}
 		GameState.Terminal.CursorPos.Clicked = pressed
 	})
 	if err != nil {
@@ -51,6 +54,8 @@ func RunGame() {
 			chasseView.Game = &GameState
 			lines = chasseView.Draw()
 		}
+
+		GameState.Terminal.CursorPos.JustClicked = false
 
 		RenderFrame(GameState, lines)
 		time.Sleep(32 * time.Millisecond)
