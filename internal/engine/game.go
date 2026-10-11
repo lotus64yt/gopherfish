@@ -38,14 +38,18 @@ func RunGame() {
 	}
 
 	menuView := &views.MenuView{}
+	chasseView := &views.ChasseView{}
 
 	for {
 		var lines []string
 		GameState = refreshGameState(GameState)
 		switch GameState.CurrentView {
 		case types.GameViewMenu:
-			menuView.Game = GameState
+			menuView.Game = &GameState
 			lines = menuView.Draw()
+		case types.GameViewChasing:
+			chasseView.Game = &GameState
+			lines = chasseView.Draw()
 		}
 
 		RenderFrame(GameState, lines)

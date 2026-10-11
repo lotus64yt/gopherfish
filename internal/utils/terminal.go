@@ -99,3 +99,13 @@ func TerminalFitToScreen(lines []string, tSize types.TerminalSize) string {
 
 	return sb.String()
 }
+
+func TerminalHitScreenBorder(size types.TerminalSize, cPos types.TerminalCursorPos) bool {
+	if cPos.X <= 2 || cPos.X >= size.Width-1 {
+		return true
+	} else if cPos.Y <= 2 || cPos.Y >= size.Height-1 {
+		return true
+	} else {
+		return false
+	}
+}
