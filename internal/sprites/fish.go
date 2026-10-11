@@ -42,7 +42,7 @@ func SpawnRandomShip(g types.GameState, fishs []Fish) []Fish {
 	newFish := Fish{
 		DirX:     dirX,
 		X:        rand.Intn(w),
-		Y:        rand.Intn(int(math.Abs(float64(h)))) + 2,
+		Y:        rand.Intn(int(math.Abs(float64(h+5)))) + 2,
 		DirY:     rand.Intn(3) - 1,
 		DirYStep: rand.Intn(2)*2 - 1,
 		DirYTick: rand.Intn(5),

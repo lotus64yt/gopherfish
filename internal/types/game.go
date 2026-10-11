@@ -12,4 +12,5 @@ type GameState struct {
 	CurrentView GameViewPage
 	Terminal    TerminalInfo
 	Score       int
+	Level       int
 }
