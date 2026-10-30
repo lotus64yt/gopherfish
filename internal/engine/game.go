@@ -42,6 +42,8 @@ func RunGame() {
 
 	menuView := &views.MenuView{}
 	chasseView := &views.ChasseView{}
+	var previousView types.GameViewPage
+	firstView := true
 
 	for {
 		var lines []string
@@ -49,9 +51,24 @@ func RunGame() {
 		switch GameState.CurrentView {
 		case types.GameViewMenu:
 			menuView.Game = &GameState
-			lines = menuView.Draw()
 		case types.GameViewChasing:
 			chasseView.Game = &GameState
+		}
+
+		if firstView || GameState.CurrentView != previousView {
+			switch GameState.CurrentView {
+			case types.GameViewMenu:
+				menuView.Init()
+			case types.GameViewChasing:
+				chasseView.Init()
+			}
+			previousView = GameState.CurrentView
+			firstView = false
+		}
+		switch GameState.CurrentView {
+		case types.GameViewMenu:
+			lines = menuView.Draw()
+		case types.GameViewChasing:
 			lines = chasseView.Draw()
 		}
 

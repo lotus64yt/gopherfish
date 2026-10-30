@@ -11,6 +11,9 @@ type MenuView struct {
 	Message string
 }
 
+func (m *MenuView) Init() {
+}
+
 func (m *MenuView) Draw() []string {
 	w := m.Game.Terminal.Size.Width
 	h := m.Game.Terminal.Size.Height
